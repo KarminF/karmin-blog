@@ -3,7 +3,7 @@ env/
 .venv/
 .env/
 
-/activate_venv.ps1
+*.ps1
 **/migrations/
 
 *.log
