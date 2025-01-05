@@ -1,0 +1,169 @@
+{% block content %}
+  {% load custom_filters %}
+  <div class="flex items-center justify-between py-4">
+    <h1 class="text-4xl font-bold">Cart</h1>
+    <button id="checkout-button" class="btn btn-lg"
+            hx-post="{% url 'checkout' %}"
+            hx-trigger="click">Checkout</button>
+  </div>
+
+  <div class="py-4">
+    <input type="text" id="search-input" class="input input-bordered w-full max-w-xs" placeholder="Search for products..." />
+  </div>
+
+  {% if cart_items %}
+    <p>Total: {{ total_price|floatformat:2 }}</p>
+    <div class="overflow-x-auto">
+
+      <table class="table" id="cart-table">
+        <thead>
+          <tr>
+            <th><label><input type="checkbox" id="select-all" class="checkbox" /></label></th>
+            <th>Article Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Sum</th>
+            <th>
+              <button id="delete_selected-button" class="btn btn-xs"
+              hx-post="{% url 'cart_delete_selected' %}"
+              hx-trigger="click">Delete selected</button>
+              </th>
+          </tr>
+        </thead>
+        <tbody id="cart-table-body" class="sortable"
+               hx-get="{% url 'cart_update_order' %}"
+               hx-trigger="change"
+               hx-swap="none">
+          {% for item in cart_items %}
+            <tr class="cart-item" data-id="{{ item.id }}">
+              <th>
+                <label>
+                  <input type="checkbox" class="checkbox row-checkbox" data-cart-item-id="{{ item.id }}" />
+                </label>
+              </th>
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="avatar">
+                    <div class="mask mask-squircle h-12 w-12">
+                    {% if item.product.image and item.product.image.url %}
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
+                    {% else %}
+                      <img src="/static/images/default.jpg" alt="Default Image" />
+                    {% endif %}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="font-bold">{{ item.product.name }}</div>
+                    <div class="text-sm opacity-50">Genre</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div id="cart-item-{{ item.id }}" class="relative group">
+                  <span>{{ item.quantity }}</span>
+                  <div class="absolute inset-y-0 left-10 flex flex-col justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button class="text-gray-500 hover:text-gray-700"
+                            hx-post="{% url 'cart_adjust_quantity' %}"
+                            hx-vals='{"csrfmiddlewaretoken": "{{ csrf_token }}","cart_item_id":"{{ item.id }}", "action":"increase"}'
+                            hx-target="#cart-item-{{ item.id }}"
+                            hx-swap="outerHTML">
+                      ▲
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700"
+                            hx-post="{% url 'cart_adjust_quantity' %}"
+                            hx-vals='{"csrfmiddlewaretoken": "{{ csrf_token }}","cart_item_id":"{{ item.id }}", "action":"decrease"}'
+                            hx-target="#cart-item-{{ item.id }}"
+                            hx-swap="outerHTML">
+                      ▼
+                    </button>
+                  </div>
+                </div>
+              </td>
+              <td>{{ item.product.price|floatformat:2 }}</td>
+              <td>{{ item.product.price|multiply:item.quantity|floatformat:2 }}</td>
+              <th>
+                <button class="btn btn-ghost btn-xs"
+                        hx-post="{% url 'cart_delete' %}"
+                        hx-vals='{"csrfmiddlewaretoken": "{{ csrf_token }}","cart_item_id":"{{ item.id }}"}'>delete</button>
+              </th>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Your cart is empty.</p>
+  {% endif %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const selectAllCheckbox = document.getElementById('select-all');
+      const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+      const checkoutButton = document.getElementById('checkout-button');
+      const deleteSelectedButton = document.getElementById('delete_selected-button');
+      const searchInput = document.getElementById('search-input');
+      const cartItems = document.querySelectorAll('.cart-item');
+      const tableBody = document.getElementById('cart-table-body');
+
+      // init Sortable
+      new Sortable(tableBody, {
+        handle: 'td', 
+        onEnd: function(evt) {
+          const sortedIDs = Array.from(tableBody.querySelectorAll('tr[data-id]')).map(tr => tr.dataset.id);
+          tableBody.setAttribute('hx-vals', JSON.stringify({ "ids[]": sortedIDs }));
+          tableBody.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+      });
+
+      // Select/Deselect all checkboxes
+      selectAllCheckbox.addEventListener('change', function() {
+        rowCheckboxes.forEach(function(checkbox) {
+          checkbox.checked = selectAllCheckbox.checked;
+        });
+        updateCheckoutButton();
+      });
+
+      // Update "Select All" checkbox based on individual selections
+      rowCheckboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+          if (!checkbox.checked) {
+            selectAllCheckbox.checked = false;
+          } else {
+            const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+          }
+          updateCheckoutButton();
+        });
+      });
+
+      // Update checkout button with selected items
+      function updateCheckoutButton() {
+        checkoutButton.setAttribute('hx-vals', JSON.stringify({
+          csrfmiddlewaretoken: "{{ csrf_token }}",
+          selected_items: Array.from(rowCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.getAttribute('data-cart-item-id'))
+        }));
+        deleteSelectedButton.setAttribute('hx-vals', JSON.stringify({
+          csrfmiddlewaretoken: "{{ csrf_token }}",
+          selected_items: Array.from(rowCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.getAttribute('data-cart-item-id'))
+        }));
+      }
+
+      // Search functionality
+      searchInput.addEventListener('input', function() {
+        const query = searchInput.value.toLowerCase();
+        cartItems.forEach(function(item) {
+          const productName = item.querySelector('td div .font-bold').textContent.toLowerCase();
+          if (productName.includes(query)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

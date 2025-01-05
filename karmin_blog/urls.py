@@ -21,6 +21,6 @@ from django.urls.conf import include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('index.urls')),
-    path('shop', include('shop.urls')),
-    path('full-calendar', include('full_calendar.urls')),
+    path('shop/', include('shop.urls')),
+    path('full-calendar/', include('full_calendar.urls')),
 ]

@@ -1,0 +1,31 @@
+{% extends "index/base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+  <div class="devider my-6"></div>
+  <div class="grid grid-cols-2 items-center">
+    <div class="mx-3">
+      {% if product.image and product.image.url %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+      {% else %}
+        <img src="/static/images/default.jpg" alt="Default Image" />
+      {% endif %}
+    </div>
+    <div>
+      <h2 class="text-5xl font-bold">{{ product.name }}</h2>
+      <p class="py-6">{{ product.description }}</p>
+      <p class="py-6">Price: {{ product.price }}</p>
+      {% comment %} <form hx-post="{% url 'add_to_cart' %}" hx-swap="none">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}" />
+        <input type="number" name="quantity" min="1" value="1" class="w-16 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" id="quantityInput" hx-trigger="change" hx-swap="none" />
+        <button type="submit" class="btn">Add to cart</button>
+      </form>
+      <form hx-post="{% url 'add_to_wishlist' %}" hx-swap="none">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}" />
+        <button type="submit" class="btn">Add to wishlist</button>
+      </form> {% endcomment %}
+    </div>
+  </div>
+{% endblock %}

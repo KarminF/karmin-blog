@@ -1,6 +1,8 @@
 {% extends 'index/base.html' %}
 {% load static %}
 
+{% block title %}Karmin Blog{% endblock %}
+
 {% block content %}
   <div class="relative w-full aspect-[2/1] bg-[url('/static/bg-painting.jpg')] bg-center bg-cover">
     <div class="absolute inset-0 bg-black opacity-50 z-0"></div>
@@ -12,7 +14,7 @@
       </div>
       <ul>
         <li>
-          <a href="#" class="link relative text-white text-5xl opacity-75">Shopping Website</a>
+          <a href="{% url 'shop:index' %}" class="link relative text-white text-5xl opacity-75">Shopping Website</a>
         </li>
         <li>
           <a href="#" class="link relative text-white text-5xl opacity-75">Calendar Booking</a>

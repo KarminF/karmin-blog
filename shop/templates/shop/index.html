@@ -1,0 +1,25 @@
+{% extends 'index/base.html' %}
+
+{% block title %}Karmin Shop{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap gap-4">
+  {% for product in products %}
+    <a href="{% url 'shop:product_detail' product.pk %}">
+      <div class="card bg-base-100 w-96 h-96 shadow-xl mx-3 my-5">
+        <figure class="h-2/3">
+          {% if product.image and product.image.url %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+          {% else %}
+            <img src="/static/images/default.jpg" alt="Default Image" />
+          {% endif %}
+        </figure>
+        <div class="card-body bottom-0">
+          <h2 class="card-title">{{ product.name }}</h2>
+          <p>{{ product.description }}</p>
+        </div>
+      </div>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}
