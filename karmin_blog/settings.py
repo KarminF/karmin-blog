@@ -23,10 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9rjxdn*yhau+3by+joh*imj91dsg=-9c8+p4nc2#8*=7ap860-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+USE_X_FORWARDED_HOST = True
+ALLOWED_HOSTS = ['uvme50.xyz', 'localhost']
+CSRF_TRUSTED_ORIGINS = ['https://uvme50.xyz']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -118,8 +120,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / "static", 
+]
+
+STATIC_URL = "/static/"
+STATIC_ROOT = r"C:\sites\django\static"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = r"C:\sites\django\media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
