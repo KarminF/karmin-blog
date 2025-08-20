@@ -20,6 +20,13 @@ class Product(TimeStampedModel):
         return self.name
 
 
+class ProductImage(TimeStampedModel):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="shop/products/")
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+    is_main = models.BooleanField(default=False)
+    
+
 class Category(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True, db_index=True)
     products = models.ManyToManyField(Product, related_name='categories', blank=True)
@@ -112,23 +119,19 @@ class CartProduct(TimeStampedModel):
         ]
     
     def __str__(self):
-        return f'{self.quantity} of {self.product.name} in Cart {self.cart.id}'
+        return f'{self.quantity} * {self.product.name} in Cart #{self.cart.id}'
     
 
-class Wishlist(models.Model):
+class Wishlist(TimeStampedModel):
     products = models.ManyToManyField(Product, related_name='wishlists')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'Wishlist {self.id}'
     
 
-class WishlistProduct(models.Model):
-    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class WishlistProduct(TimeStampedModel):
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name="wishlist_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlist_items")
 
     def __str__(self):
-        return f'{self.product.name} in Wishlist {self.wishlist.id}'
+        return f'{self.product.name} in Wishlist #{self.wishlist.id}'
