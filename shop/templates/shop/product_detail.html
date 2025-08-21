@@ -5,8 +5,8 @@
   <div class="devider my-6"></div>
   <div class="grid grid-cols-2 items-center">
     <div class="mx-3">
-      {% if product.image and product.image.url %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+      {% if product.main_image %}
+        <img src="{{ product.main_image.image.url }}" alt="{{ product.name }}" />
       {% else %}
         <img src="/static/images/default.jpg" alt="Default Image" />
       {% endif %}

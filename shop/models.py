@@ -18,10 +18,7 @@ class Product(TimeStampedModel):
     description = models.TextField(blank=True, default="")
     @property
     def main_image(self):
-        main = self.images.filter(is_main=True).first()
-        if main:
-            return main
-        return self.images.first()
+        return self.images.order_by("-is_main", "created_at", "id").first()
 
     def __str__(self):
         return self.name
@@ -33,6 +30,14 @@ class ProductImage(TimeStampedModel):
     alt_text = models.CharField(max_length=255, blank=True, null=True)
     is_main = models.BooleanField(default=False)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["product"], condition=Q(is_main=True), name="unique_main_image_per_product"),
+        ]
+        ordering = ["-is_main", "created_at", "id"]
+
+    def __str__(self):
+        return f"Image of {self.product.name} ({'main' if self.is_main else 'sub'})"
 
 class Category(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True, db_index=True)
@@ -44,15 +49,10 @@ class Category(TimeStampedModel):
 
 class Order(TimeStampedModel):
     products = models.ManyToManyField(Product, through='OrderProduct', related_name='orders')
-
-    class Meta:
-        ordering = ("-created_at",)
-
     @property
     def item_count(self) -> int:
         agg = self.order_items.aggregate(total=Sum("quantity"))
         return agg["total"] or 0
-
     @property
     def total_price(self) -> Decimal:
         agg = self.order_items.aggregate(
@@ -60,6 +60,9 @@ class Order(TimeStampedModel):
         )
         return agg["total"] or Decimal("0.00")
     
+    class Meta:
+        ordering = ("-created_at",)
+
     def __str__(self):
         return f"Order #{self.id}"
     
@@ -70,16 +73,18 @@ class OrderProduct(TimeStampedModel):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     unit_price = models.DecimalField(
         max_digits=10, decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.00"))]
+        validators=[MinValueValidator(Decimal("0.00"))], 
+        blank=True, null=True
     )
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["order","product"], name="unique_order_product"),
             models.CheckConstraint(check=Q(quantity__gt=0), name="orderproduct_quantity_gt_0"),
+            models.CheckConstraint(check=Q(unit_price__gte=Decimal("0.00")), name="orderproduct_unit_price_gte_0")
         ]
     
     def save(self, *args, **kwargs):
-        if self.unit_price in (None, ""):
+        if self.unit_price is None:
             self.unit_price = self.product.price
         super().save(*args, **kwargs)
 
@@ -89,15 +94,10 @@ class OrderProduct(TimeStampedModel):
 
 class Cart(TimeStampedModel):
     products = models.ManyToManyField(Product, through='CartProduct', related_name='carts', blank=True)
-
-    class Meta:
-        ordering = ("-created_at",)
-
     @property
     def item_count(self) -> int:
         agg = self.cart_items.aggregate(total=Sum("quantity"))
         return agg["total"] or 0
-
     @property
     def total_price(self) -> Decimal:
         agg = self.cart_items.aggregate(
@@ -105,13 +105,11 @@ class Cart(TimeStampedModel):
         )
         return agg["total"] or Decimal("0.00")
     
+    class Meta:
+        ordering = ("-created_at",)
+
     def __str__(self):
         return f'Cart #{self.id}'
-    
-    def save(self, *args, **kwargs):
-        self.quantity = sum(item.quantity for item in self.cartproduct_set.all())
-        self.total_price = sum(item.product.price * item.quantity for item in self.cartproduct_set.all())
-        super().save(*args, **kwargs)
     
 
 class CartProduct(TimeStampedModel):
@@ -130,7 +128,7 @@ class CartProduct(TimeStampedModel):
     
 
 class Wishlist(TimeStampedModel):
-    products = models.ManyToManyField(Product, related_name='wishlists')
+    products = models.ManyToManyField(Product, through='WishlistProduct', related_name='wishlists')
 
     def __str__(self):
         return f'Wishlist {self.id}'
@@ -139,6 +137,11 @@ class Wishlist(TimeStampedModel):
 class WishlistProduct(TimeStampedModel):
     wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name="wishlist_items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlist_items")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["wishlist", "product"], name="uniq_wishlist_product"),
+        ]
 
     def __str__(self):
         return f'{self.product.name} in Wishlist #{self.wishlist.id}'
