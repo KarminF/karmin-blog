@@ -27,7 +27,7 @@ class Product(TimeStampedModel):
 class ProductImage(TimeStampedModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="shop/products/")
-    alt_text = models.CharField(max_length=255, blank=True, null=True)
+    alt_text = models.CharField(max_length=255, blank=True, default="")
     is_main = models.BooleanField(default=False)
 
     class Meta:
@@ -39,8 +39,10 @@ class ProductImage(TimeStampedModel):
     def __str__(self):
         return f"Image of {self.product.name} ({'main' if self.is_main else 'sub'})"
 
+
 class Category(TimeStampedModel):
-    name = models.CharField(max_length=255, unique=True, db_index=True)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, default="")
     products = models.ManyToManyField(Product, related_name='categories', blank=True)
 
     def __str__(self):
