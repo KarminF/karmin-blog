@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <title>Scroll Steps Fixed</title>
+</head>
+<body class="bg-base-200">
+  <!-- 左侧固定的步骤条 -->
+  <aside class="fixed top-1/2 left-4 -translate-y-1/2 z-50">
+    <ul id="scroll-steps" class="steps steps-vertical">
+      <li class="step step-primary" data-target="#s1">Register</li>
+      <li class="step" data-target="#s2">Choose plan</li>
+      <li class="step" data-target="#s3">Purchase</li>
+      <li class="step" data-target="#s4">Receive Product</li>
+    </ul>
+  </aside>
+
+  <!-- 右侧内容区 -->
+  <main class="ml-32 pr-4">
+    <section id="s1" class="card bg-base-100 shadow-md mb-10">
+      <div class="card-body">
+        <h2 class="card-title">01. Register</h2>
+        <p>这里是第一段内容</p>
+        <div class="h-[60vh]"></div>
+      </div>
+    </section>
+
+    <section id="s2" class="card bg-base-100 shadow-md mb-10">
+      <div class="card-body">
+        <h2 class="card-title">02. Choose plan</h2>
+        <p>这里是第二段内容</p>
+        <div class="h-[60vh]"></div>
+      </div>
+    </section>
+
+    <section id="s3" class="card bg-base-100 shadow-md mb-10">
+      <div class="card-body">
+        <h2 class="card-title">03. Purchase</h2>
+        <p>这里是第三段内容</p>
+        <div class="h-[60vh]"></div>
+      </div>
+    </section>
+
+    <section id="s4" class="card bg-base-100 shadow-md mb-20">
+      <div class="card-body">
+        <h2 class="card-title">04. Receive Product</h2>
+        <p>这里是第四段内容</p>
+        <div class="h-[60vh]"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const stepEls = Array.from(document.querySelectorAll('#scroll-steps .step'));
+    const sections = stepEls.map(li => document.querySelector(li.dataset.target));
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const idx = sections.indexOf(entry.target);
+        if (idx === -1) return;
+
+        // 进度条式（当前以及之前都高亮）
+        stepEls.forEach((li, i) => {
+          li.classList.toggle('step-primary', i <= idx);
+        });
+      });
+    }, {
+      root: null,
+      rootMargin: '-30% 0px -60% 0px',
+      threshold: 0.01
+    });
+
+    sections.forEach(sec => io.observe(sec));
+
+    // 点击 step 平滑滚动
+    stepEls.forEach(li => {
+      li.addEventListener('click', () => {
+        const target = document.querySelector(li.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

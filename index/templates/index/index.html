@@ -4,24 +4,100 @@
 {% block title %}Karmin Blog{% endblock %}
 
 {% block content %}
-  <div class="relative w-full aspect-[2/1] bg-[url('/static/bg_painting.jpg')] bg-center bg-cover">
-    <div class="absolute inset-0 bg-black opacity-50 z-0"></div>
 
-    <div class="flex flex-col justify-around items-center w-full h-full z-10">
-      <div class="text-center">
-      <p class="relative text-white text-5xl opacity-75 pt-10">Welcome</p>
-      <p class="relative text-white text-5xl opacity-75 pt-8">This is a collection of my learning projects:</p>
-      </div>
-      <ul>
-        <li>
-          <a href="{% url 'shop:index' %}" class="link relative text-white text-5xl opacity-75">Shopping Website</a>
-        </li>
-        <li>
-          <a href="{% url 'shop:index' %}" class="link relative text-white text-5xl opacity-75">Calendar Booking</a>
-        </li>
+  <div class="relative w-full bg-black text-gray-100">
+    <div class="absolute inset-0 bg-[url('/static/bg_painting.jpg')] opacity-50"></div>
+
+    <aside class="fixed top-1/2 left-[10%] -translate-y-1/2 z-50">
+      <ul id="scroll-steps" class="steps steps-vertical h-[60vh]">
+        <li class="step cursor-pointer" data-content="" data-target="#s1">Summary</li>
+        <li class="step cursor-pointer" data-content="" data-target="#s2">Skills</li>
+        <li class="step cursor-pointer" data-content="" data-target="#s3">Experience</li>
+        <li class="step cursor-pointer" data-content="" data-target="#s4">Projects</li>
+        <li class="step cursor-pointer" data-content="" data-target="#s5">Education</li>
       </ul>
-      <div>
-      </div>
-    </div>
+    </aside>
+    <main class="w-3/5 mx-auto">
+      <section id="s1" class="card shadow-md mb-10">
+        <div class="card-body">
+          <h2 class="card-title text-xl">Summary</h2>
+          <div class="divider h-[1px] bg-gray-300 my-2"></div>
+          <div class="h-[40vh] flex flex-col justify-between">
+            <p>don't ask me what i'm writing, there has to be some content here, right?</p>
+            <p>My name is John Doe, and I am a web developer with a passion for creating dynamic and user-friendly websites.</p>
+            <p>In my free time, I enjoy exploring new technologies and working on personal projects.</p>
+            <p>Thank you for your attention, and I look forward to connecting with you all.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="s2" class="card shadow-md mb-10">
+        <div class="card-body">
+          <h2 class="card-title">Skills</h2>
+          <div class="divider h-[1px] bg-gray-300 my-2"></div>
+          <p>Surely I've got a lot of skills to show.</p>
+        </div>
+        <div class="h-[60vh]"></div>
+      </section>
+
+      <section id="s3" class="card shadow-md mb-10">
+        <div class="card-body">
+          <h2 class="card-title">Experience</h2>
+          <div class="divider h-[1px] bg-gray-300 my-2"></div>
+          <p>And I have experience in various web development technologies.</p>
+        </div>
+        <div class="h-[60vh]"></div>
+      </section>
+
+      <section id="s4" class="card shadow-md mb-20">
+        <div class="card-body">
+          <h2 class="card-title">Projects</h2>
+          <div class="divider h-[1px] bg-gray-300 my-2"></div>
+          <p>My projects are crazily good.</p>
+          <div class="h-[60vh]"></div>
+        </div>
+      </section>
+
+      <section id="s5" class="card shadow-md mb-20">
+        <div class="card-body">
+          <h2 class="card-title">Education</h2>
+          <div class="divider h-[1px] bg-gray-300 my-2"></div>
+          <p>Not much educated</p>
+        </div>
+        <div class="h-[60vh]"></div>
+      </section>
+    </main>
   </div>
+
+    <script>
+    const stepEls = Array.from(document.querySelectorAll('#scroll-steps .step'));
+    const sections = stepEls.map(li => document.querySelector(li.dataset.target));
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const idx = sections.indexOf(entry.target);
+        if (idx === -1) return;
+
+        // set step
+        stepEls.forEach((li, i) => {
+          li.classList.toggle('step-neutral', i <= idx);
+        });
+      });
+    }, {
+      root: null,
+      rootMargin: '-30% 0px -60% 0px',
+      threshold: 0.01
+    });
+
+    sections.forEach(sec => io.observe(sec));
+
+    // click step
+    stepEls.forEach(li => {
+      li.addEventListener('click', () => {
+        const target = document.querySelector(li.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
 {% endblock %}
