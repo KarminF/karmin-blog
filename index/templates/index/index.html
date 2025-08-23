@@ -24,9 +24,14 @@
           <div class="divider h-[1px] bg-gray-300 my-2"></div>
           <div class="h-[40vh] flex flex-col justify-between">
             <p>don't ask me what i'm writing, there has to be some content here, right?</p>
-            <p>My name is John Doe, and I am a web developer with a passion for creating dynamic and user-friendly websites.</p>
             <p>In my free time, I enjoy exploring new technologies and working on personal projects.</p>
-            <p>Thank you for your attention, and I look forward to connecting with you all.</p>
+            <p>I'm also a big fan of open-source software and contribute to various projects on GitHub.</p>
+            <p>Feel free to reach out to me if you have any questions or just want to chat about tech!</p>
+            <p>Thank you for visiting my blog!</p>
+            <p class="text-right">- Karmin</p>
+            <p class="text-right text-sm text-gray-500">Last updated: {{ now|date:"Y-m-d" }}</p>
+            <p class="text-right text-sm text-gray-500">Powered by Django</p>
+            
           </div>
         </div>
       </section>
@@ -83,7 +88,7 @@
 
         // set step
         stepEls.forEach((li, i) => {
-          li.classList.toggle('step-neutral', i <= idx);
+          li.classList.toggle('step-neutral', i > idx);
         });
       });
     }, {
